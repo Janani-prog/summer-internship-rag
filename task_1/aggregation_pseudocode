@@ -1,0 +1,34 @@
+J = Create_Empty_List()
+P_k = Retrieve_Relevant_Passages()
+
+For each passage p_j in P_k:
+        prob_of_dont_know = LLM.Get_Probability_Of_Saying_IDK(query=q, passage=p_j)
+
+        If prob_of_dont_know < gamma:
+            Add p_j to J
+
+If J is Empty:
+    Return "I don't know" 
+
+    
+robust_response r_star = Create_Empty_String()
+
+For current_token_index from 1 to T_max:
+
+    v_j_vectors = Create_Empty_List()
+    For each passage p_j in J:
+        v_j = LLM.Get_Next_Token_Probability_Vector(query=q, passage=p_j, current_answer_prefix=r_star) //from original query, specific passage and what has been generated already
+        Add v_j to all_v_j_vectors
+
+    v_hat = Perform_Element_Wise_Average(all_v_j_vectors)
+
+    (token_1, prob_1), (token_2, prob_2) = Get_Top_Two_Tokens_And_Probs(v_hat)
+
+    confidence_gap = prob_1 - prob_2
+
+    If confidence_gap > eta:
+        next_token t_star = token_1
+    Else:
+        next_token t_star = LLM.Get_Next_Token_Without_Passages()
+
+    r_star = r_star + t_star

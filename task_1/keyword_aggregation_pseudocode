@@ -1,11 +1,3 @@
-Function SecureKeywordAggregation(
-    Query q,                       // The question or topic
-    List of RetrievedPassages P_k, // All the retrieved pieces of information
-    LLM_Model LLM,                 // Your smart assistant (Large Language Model)
-    alpha,                         // (α) Parameter for threshold calculation (e.g., 0.3)
-    beta                           // (β) Parameter for threshold calculation (e.g., 5)
-
-):
 P_k = Retrieve_Passages_For_Query(q)
 C = Create_Empty_Counter() 
 n = 0     
@@ -25,6 +17,6 @@ W_star = Create_Empty_List()
 
 For each keyword, count_value in C:
     If count_value >= threshold_mu:
-        Add keyword to filtered_keywords W_star
+        Add keyword to W_star
 
 final_response_r_star = LLM.Generate_Text_From_Keywords(q,W_star,"Answer the query using the following important keywords: ")

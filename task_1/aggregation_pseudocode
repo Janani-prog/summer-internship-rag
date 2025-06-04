@@ -2,7 +2,7 @@ J = Create_Empty_List()
 P_k = Retrieve_Passages_For_Query(q)
 
 For each passage p_j in P_k:
-        prob_of_dont_know = LLM.Get_Probability_Of_Saying_IDK(query=q, passage=p_j)
+        prob_of_dont_know = LLM.Get_Probability_Of_Saying_IDK(query=q, passage=p_j) //of you only had this passage to generate response, whats the probability of saying 'I don't know?' 
 
         If prob_of_dont_know < gamma:
             Add p_j to J
@@ -27,8 +27,8 @@ For current_token_index from 1 to T_max:
     confidence_gap = prob_1 - prob_2
 
     If confidence_gap > eta:
-        next_token t_star = token_1
+        t_star = token_1
     Else:
-        next_token t_star = LLM.Get_Next_Token_Without_Passages()
+        t_star = LLM.Get_Next_Token_Without_Passages()
 
     r_star = r_star + t_star

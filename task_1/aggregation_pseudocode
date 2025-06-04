@@ -1,5 +1,5 @@
 J = Create_Empty_List()
-P_k = Retrieve_Relevant_Passages()
+P_k = Retrieve_Passages_For_Query(q)
 
 For each passage p_j in P_k:
         prob_of_dont_know = LLM.Get_Probability_Of_Saying_IDK(query=q, passage=p_j)
@@ -11,7 +11,7 @@ If J is Empty:
     Return "I don't know" 
 
     
-robust_response r_star = Create_Empty_String()
+r_star = Create_Empty_String()
 
 For current_token_index from 1 to T_max:
 

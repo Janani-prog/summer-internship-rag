@@ -3,7 +3,8 @@ C = Create_Empty_Counter()
 n = 0     
 
 For each passage p_j in P_k:
-    isolated_response_j = LLM.Generate_Text_From_Passage(q,p_j,instruction)
+    isolated_response_j = LLM.Generate_Text_From_Passage(q,p_j,instruction) \\“answer the query given retrieved passages, say ‘I don’t know’
+if no relevant information found”
 
         If "I don't know" is NOT in isolated_response_j:
             n = n + 1 
@@ -18,5 +19,7 @@ W_star = Create_Empty_List()
 For each keyword, count_value in C:
     If count_value >= threshold_mu:
         Add keyword to W_star
+
+Sort_in_Alphabetical_order(W_star)
 
 final_response_r_star = LLM.Generate_Text_From_Keywords(q,W_star,"Answer the query using the following important keywords: ")

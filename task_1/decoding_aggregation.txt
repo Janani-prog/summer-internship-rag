@@ -10,6 +10,25 @@ For each passage p_j in P_k:
 If J is Empty:
     Return "I don't know" 
 
+// Additional filtering
+
+// 1. Passage Re-ranking
+re_ranked_J = Create_Empty_List()
+passage_scores = {}
+For each passage p_j in J:
+    passage_scores[p_j] = ReRanker_Model.Score(query=q, passage=p_j) //cross encoder
+
+sorted_passages = Sort_By_Score_Descending(passage_scores)
+J = Select_Top_N_Passages(sorted_passages, N) 
+
+// 2. Factual Consistency 
+filtered_J_by_consistency = Create_Empty_List()
+For each passage p_j in J:
+    is_consistent = LLM.Check_Consistency(statement=p_j.content, known_facts_or_other_reliable_sources_or_other_passages=J_minus_pj)
+    If is_consistent:
+        Add p_j to filtered_J_by_consistency
+J = filtered_J_by_consistency
+
     
 r_star = Create_Empty_String()
 
@@ -32,3 +51,4 @@ For current_token_index from 1 to T_max:
         t_star = LLM.Get_Next_Token_Without_Passages()
 
     r_star = r_star + t_star
+e

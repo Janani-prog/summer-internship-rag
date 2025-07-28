@@ -12,6 +12,7 @@ The final deliverable includes a detailed comparative analysis exported to an Ex
 
 This is the final, successful output from running the script. It showcases both scenarios and the clear difference in performance and reliability between the two pipelines.
 
+```text
 ================================================================================ 🚀 RAG Pipeline Demonstration (Gemini API): Basic vs. Robust 🚀
 2025-07-28 12:04:29,897 - INFO - Load pretrained SentenceTransformer: all-mpnet-base-v2
 ...
@@ -80,7 +81,7 @@ Exporting comparison for 'Scenario 2: Laptop Return Query' to sheet: 'Scenario_2
 ✅ Successfully exported comparison report.
 
 Demonstration complete. Check 'rag_comparative_analysis.xlsx' for detailed reports.
-
+```
 
 ---
 

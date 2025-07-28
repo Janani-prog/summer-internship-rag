@@ -87,9 +87,7 @@ python final_rag_demonstration_professional.py
 ```
 
 ---
-## Understanding the Output
-
-## Understanding the Output
+## Understanding the Output 
 
 ### Console Output
 The script will run two scenarios sequentially. For each scenario, it displays a step-by-step execution log for both the Basic and Robust RAG pipelines, including a detailed analysis table for the robust method's scoring.
@@ -99,13 +97,7 @@ The script will run two scenarios sequentially. For each scenario, it displays a
 ### Excel Report: `rag_comparative_analysis.xlsx`
 This file is the key deliverable for analysis. It contains two sheets, one for each scenario, providing a clear, side-by-side comparison of the pipelines and a detailed scoring breakdown for the robust method.
 
-### Excel Report: rag_comparative_analysis.xlsx
-This file is the key deliverable for analysis. It contains two sheets, one for each scenario. Each sheet provides a clear, side-by-side comparison:
 
-- **Basic RAG Analysis:** Shows the documents it retrieved and the final response it gave.
-- **Robust RAG Analysis:** Provides a summary of the outcome (document selected or fallback) and its final response, followed by a detailed table breaking down the Relevance, Trust, Status, Audience, and Version scores for every candidate document.
-
----
 ## Connection to the Research Paper
 
 This project serves as a practical demonstration of the concepts outlined in **"Certifiably Robust RAG against Retrieval Corruption"** (arXiv:2405.15556v1).

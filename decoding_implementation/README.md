@@ -1,20 +1,10 @@
-# Advanced RAG Pipeline Demonstration
-
-This project demonstrates a sophisticated, multi-stage **Robust Retrieval-Augmented Generation (RAG)** pipeline. It is designed to overcome the vulnerabilities of standard RAG systems by intelligently verifying and selecting information before generating a response.
-
-The script runs two distinct scenarios to showcase a side-by-side comparison between a **Basic RAG** and our **Robust RAG**, highlighting the latter's ability to handle conflicting information and its awareness of its own knowledge limitations.
-
-The final deliverable includes a detailed comparative analysis exported to an Excel file, providing a clear audit trail of the system's decision-making process.
-
----
-
 ## Live Demonstration Output
 
 This is the final, successful output from running the script. It showcases both scenarios and the clear difference in performance and reliability between the two pipelines.
 
 ```
 ================================================================================
-🚀 RAG Pipeline Demonstration (Gemini API): Basic vs. Robust 🚀
+RAG Pipeline Demonstration (Gemini API): Basic vs. Robust 
 2025-07-28 11:51:46,468 - INFO - Google AI client initialized for model: gemini-1.5-flash-latest
 ...
 
@@ -53,7 +43,7 @@ Executing Robust RAG Pipeline
 The official expenditure policy for client-facing meals in London is set at $150 per head for Senior Managers (Source ID: policy_main_2024).
 
 Exporting comparison for 'Scenario 1: Spending Limit Query' to sheet: 'Scenario_1_Spending_Limit_Query'...
-✅ Successfully exported comparison report.
+Successfully exported comparison report.
 
 ################################################################################
 # Scenario 2: Hardware Failure Query
@@ -91,7 +81,7 @@ The policy for getting a new laptop after a hardware failure typically involves.
 ...[Detailed general knowledge answer]...
 
 Exporting comparison for 'Scenario 2: Hardware Failure Query' to sheet: 'Scenario_2_Hardware_Failure_Que'...
-✅ Successfully exported comparison report.
+Successfully exported comparison report.
 
 Demonstration complete. Check 'rag_comparative_analysis.xlsx' for detailed reports.
 ```

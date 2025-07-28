@@ -89,15 +89,15 @@ python final_rag_demonstration_professional.py
 ---
 ## Understanding the Output
 
-### Console Output
-The script will run two scenarios sequentially. For each scenario, you will see:
+## Understanding the Output
 
-- **Basic RAG Pipeline Execution:** Shows which documents were retrieved and the (often unreliable) answer generated.
-- **Robust RAG Pipeline Execution:** Provides a step-by-step log, including:
-    - The initial set of retrieved candidates.
-    - A detailed Analysis Table showing the Relevance, Trust, and Combined scores for each document.
-    - The final decision, stating which document was selected or if the fallback was triggered.
-    - The final, reliable answer.
+### Console Output
+The script will run two scenarios sequentially. For each scenario, it displays a step-by-step execution log for both the Basic and Robust RAG pipelines, including a detailed analysis table for the robust method's scoring.
+
+![Console Output](screenshots)
+
+### Excel Report: `rag_comparative_analysis.xlsx`
+This file is the key deliverable for analysis. It contains two sheets, one for each scenario, providing a clear, side-by-side comparison of the pipelines and a detailed scoring breakdown for the robust method.
 
 ### Excel Report: rag_comparative_analysis.xlsx
 This file is the key deliverable for analysis. It contains two sheets, one for each scenario. Each sheet provides a clear, side-by-side comparison:

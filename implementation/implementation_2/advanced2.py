@@ -1,10 +1,10 @@
-# final_rag_demonstration_gemini.py
+# final_rag_pseudocode_gemini.py
 
 import os
 import re
 import logging
 import time
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Set
 
 # Third-party imports
 from dotenv import load_dotenv
@@ -12,7 +12,6 @@ import google.generativeai as genai
 import chromadb
 from chromadb.utils import embedding_functions
 from chromadb.config import Settings
-import pandas as pd
 
 # --- Basic Setup ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -21,14 +20,13 @@ logging.getLogger("chromadb.telemetry.product.posthog").setLevel(logging.CRITICA
 load_dotenv()
 
 # --- CONSTANTS ---
-RELEVANCE_THRESHOLD = 6.0 
 GEMINI_MODEL = "gemini-2.0-flash-lite"
 
 class RAGDemonstrator:
     """
-    Demonstrates and compares a Basic RAG pipeline against a final, perfected
-    Robust RAG pipeline that uses multi-stage verification to provide a definitive
-    answer or trigger a safe fallback. This version uses the Gemini API.
+    Demonstrates and compares a Basic RAG pipeline against a Robust RAG pipeline
+    that strictly follows the multi-stage filtering and generation logic from the
+    provided pseudocode. This version uses the Gemini API.
     """
     def __init__(self):
         self.llm = self._initialize_llm()
@@ -46,22 +44,14 @@ class RAGDemonstrator:
         logger.info(f"Google AI client initialized for model: {GEMINI_MODEL}")
         return genai.GenerativeModel(model_name=GEMINI_MODEL)
 
-    def _setup_collection(self, docs: List[Dict]):
+    def _setup_collection(self, docs: List[str], doc_ids: List[str]):
         """Resets and populates the ChromaDB collection for a given scenario."""
         try:
             self.db_client.delete_collection(name="rag_scenario_docs")
-        except Exception:
-            pass
+        except Exception: pass
         
-        self.collection = self.db_client.create_collection(
-            name="rag_scenario_docs", 
-            embedding_function=self.embedding_func
-        )
-        self.collection.add(
-            ids=[d['id'] for d in docs], 
-            documents=[d['content'] for d in docs], 
-            metadatas=[d['metadata'] for d in docs]
-        )
+        self.collection = self.db_client.create_collection(name="rag_scenario_docs", embedding_function=self.embedding_func)
+        self.collection.add(ids=doc_ids, documents=docs)
 
     def _llm_call(self, prompt: str) -> str:
         """A simple, non-streaming call for internal logic using the Gemini API."""
@@ -73,8 +63,8 @@ class RAGDemonstrator:
             logger.error(f"Error during Gemini API call: {e}")
             return "Error during generation."
 
-    def demonstrate_basic_rag(self, query: str) -> Dict[str, Any]:
-        """Runs a standard RAG pipeline and returns its results."""
+    def demonstrate_basic_rag(self, query: str):
+        """Runs a standard RAG pipeline."""
         print("\n" + "-"*80)
         print("Executing Basic RAG Pipeline")
         print("."*80)
@@ -92,201 +82,153 @@ class RAGDemonstrator:
         print("\n--- Response from Basic RAG ---")
         print(response)
         print("-" * 50)
-        return {"retrieved_ids": doc_ids, "response": response}
 
-    def demonstrate_robust_rag(self, query: str) -> Dict[str, Any]:
-        """Runs the robust pipeline with fine-tuned scoring and returns its detailed results."""
+    def demonstrate_robust_rag(self, query: str):
+        """Runs the robust pipeline exactly following the pseudocode's logic."""
         print("\n" + "-"*80)
-        print("Executing Robust RAG Pipeline")
+        print("Executing Robust RAG Pipeline (Pseudocode Implementation)")
         print("."*80)
         
-        retrieved = self.collection.query(query_texts=[query], n_results=5)
-        documents = [{'id': i, 'content': c, 'metadata': m} for i, c, m in zip(retrieved['ids'][0], retrieved['documents'][0], retrieved['metadatas'][0])]
-        print(f"1. Wide Retrieval: Fetches {len(documents)} candidates: {[d['id'] for d in documents]}")
+        retrieved = self.collection.query(query_texts=[query], n_results=10)
+        documents = [{'id': i, 'content': c} for i, c in zip(retrieved['ids'][0], retrieved['documents'][0])]
+        print(f"1. Wide Retrieval: Fetched {len(documents)} candidates.")
+        print(f"   Candidates: {[d['id'] for d in documents]}")
 
-        print("\n2. Relevance & Trust Scoring:")
+        # Stage 2: "I Don't Know" Filtering
+        print("\n2. 'I Don't Know' Filtering (Pseudocode Step 1):")
+        knowable_docs = []
         for doc in documents:
-            relevance_prompt = (
-                "On a scale of 1 to 10, how relevant is the context to the user's query? "
-                "A score of 9-10 requires answering the query completely. "
-                "If it is only tangentially related (e.g., about the same topic but doesn't answer the specific question), give a score of 2-4. "
-                "If it is not relevant at all, score it 1.\n\n"
-                f"Context:'{doc['content']}'\n\nQuery: '{query}'\n\nRespond with only a single number."
-            )
-            score_str = self._llm_call(relevance_prompt)
+            prompt = f"Based ONLY on the context below, can you answer the query? If not, say exactly 'I don't know'.\n\nContext: '{doc['content']}'\n\nQuery: '{query}'"
+            response = self._llm_call(prompt)
+            if 'i don\'t know' not in response.lower():
+                knowable_docs.append(doc)
+                print(f"   - [PASS] '{doc['id']}' seems to contain a direct answer.")
+            else:
+                print(f"   - [FAIL] '{doc['id']}' does not contain a direct answer.")
+        
+        if not knowable_docs:
+            print("\n--- Response from Robust RAG ---")
+            print("After filtering, no documents were found to contain a confident answer.")
+            print("-" * 50)
+            return
+
+        # Stage 3: Passage Re-ranking
+        print(f"\n3. Passage Re-ranking (Pseudocode Step 2): Selecting top 5 candidates.")
+        for doc in knowable_docs:
+            prompt = f"On a scale of 1 to 10, how relevant is the provided context to the query? Respond with only a single number.\n\nContext:'{doc['content']}'\n\nQuery: '{query}'"
+            score_str = self._llm_call(prompt)
             match = re.search(r'\d+', score_str)
             doc['relevance_score'] = int(match.group()) if match else 0
-            
-            meta = doc['metadata']
-            doc['status_score'] = 10 if meta.get('status') == 'active' else -20
-            doc['audience_score'] = 15 if meta.get('audience') == 'senior_managers' else 0
-            doc['version_score'] = round(meta.get('version', 2024) - 2024, 1) 
-            doc['trust_score'] = doc['status_score'] + doc['audience_score'] + doc['version_score']
-            doc['combined_score'] = (doc['relevance_score'] * 0.7) + (doc['trust_score'] * 0.3)
-
-        prioritized_docs = sorted(documents, key=lambda x: x['combined_score'], reverse=True)
         
-        print("\n3. Final Selection Analysis:")
-        header = f"{'Rank':<5} | {'Document ID':<25} | {'Relevance':<10} | {'Trust':<7} | {'Combined':<10}"
-        print("   " + header)
-        print("   " + "-" * (len(header) + 3))
-        for i, doc in enumerate(prioritized_docs):
-            line = f"{i+1:<5} | {doc['id']:<25} | {doc['relevance_score']:<10} | {doc['trust_score']:<7.1f} | {doc['combined_score']:<10.2f}"
-            print("   " + line)
-        print("   " + "-" * (len(header) + 3))
+        reranked_docs = sorted(knowable_docs, key=lambda x: x['relevance_score'], reverse=True)
+        top_docs = reranked_docs[:5]
+        print("   Re-ranked Scores:")
+        for doc in reranked_docs: print(f"   - {doc['relevance_score']:<2}/10 '{doc['id']}'")
+        print(f"   Top 5 selected: {[d['id'] for d in top_docs]}")
 
-        print("\n4. Decision & Generation:")
-        source_of_truth = prioritized_docs[0]
-        
-        was_fallback = source_of_truth['combined_score'] < RELEVANCE_THRESHOLD
-        if was_fallback:
-            print(f"   - Action: No single document is relevant enough (top score {source_of_truth['combined_score']:.2f} < {RELEVANCE_THRESHOLD}). Triggering Fallback.")
-            fallback_prompt = f"Please provide a general answer to the following query based on common business practices.\n\nQuery: {query}\n\nAnswer:"
-            response = self._llm_call(fallback_prompt)
+        # Stage 4: Factual Consistency Check
+        print("\n4. Factual Consistency Check (Pseudocode Step 3):")
+        consistent_docs = []
+        if len(top_docs) > 1:
+            for i, doc_to_check in enumerate(top_docs):
+                other_docs = top_docs[:i] + top_docs[i+1:]
+                other_content = "\n".join([f"- {d['content']}" for d in other_docs])
+                prompt = f"Is the Primary Statement consistent with the Supporting Evidence? Answer Yes or No.\n\nPrimary Statement: '{doc_to_check['content']}'\n\nSupporting Evidence:\n{other_content}"
+                response = self._llm_call(prompt)
+                if 'yes' in response.lower():
+                    consistent_docs.append(doc_to_check)
+                    print(f"   - [PASS] '{doc_to_check['id']}' is consistent with the other top documents.")
+                else:
+                    print(f"   - [FAIL] '{doc_to_check['id']}' is contradictory.")
         else:
-            print(f"   - Action: Highest scoring document '{source_of_truth['id']}' selected as source of truth.")
-            prompt = (f"Answer the user's query using ONLY the provided context. Be direct and cite your source.\n\n"
-                      f"Context (Source ID: {source_of_truth['id']}):\n{source_of_truth['content']}\n\nQuery: {query}\n\nAnswer:")
-            response = self._llm_call(prompt)
-            
+            consistent_docs = top_docs
+            print("   - [PASS] Only one document remains; proceeding by default.")
+
+        if not consistent_docs:
+            print("\n--- Response from Robust RAG ---")
+            print("After filtering, the most relevant documents were found to be contradictory. No reliable answer can be generated.")
+            print("-" * 50)
+            return
+
+        # Stage 5: Synthesized Generation (Simulating Secure Decoding)
+        print("\n5. Synthesized Generation (Simulating Pseudocode's Secure Decoding):")
+        final_context = "\n\n".join([f"Source ID: {d['id']}\nContent: {d['content']}" for d in consistent_docs])
+        final_prompt = (
+            "Synthesize a clear and direct final answer to the user's query based ONLY on the provided sources. "
+            "Combine information from all sources into one cohesive answer. "
+            "If the sources are incomplete, you must synthesize the information you have. Do not invent information.\n\n"
+            f"--- Vetted Sources ---\n{final_context}\n\n"
+            f"--- Query ---\n{query}\n\n"
+            f"--- Synthesized Answer ---"
+        )
+        
+        response = self._llm_call(final_prompt)
         print("\n--- Response from Robust RAG ---")
         print(response)
         print("-" * 50)
-        
-        return {
-            "scored_docs": prioritized_docs,
-            "response": response,
-            "was_fallback": was_fallback,
-            "top_doc": None if was_fallback else source_of_truth
-        }
 
-    def export_scenario_comparison_to_excel(self, basic_results: Dict, robust_results: Dict, scenario_title: str, filename: str):
-        """Exports a side-by-side comparison for a scenario to a dedicated sheet in an Excel file."""
-        sheet_name = scenario_title.replace(":", "").replace(" ", "_")[:31]
-        print(f"\nExporting comparison for '{scenario_title}' to sheet: '{sheet_name}'...")
-
-        # --- Create DataFrames for Excel ---
-        basic_df = pd.DataFrame([
-            {'Component': 'Retrieved Document IDs', 'Details': ', '.join(basic_results['retrieved_ids'])},
-            {'Component': 'Final Response', 'Details': basic_results['response']}
-        ])
-
-        if robust_results['was_fallback']:
-            summary_details = "No relevant documents found. Fallback to general knowledge."
-        else:
-            summary_details = f"Selected document '{robust_results['top_doc']['id']}' as the source of truth."
-        
-        robust_summary_df = pd.DataFrame([
-            {'Component': 'Outcome', 'Details': summary_details},
-            {'Component': 'Final Response', 'Details': robust_results['response']}
-        ])
-        
-        report_data = []
-        top_score = robust_results['scored_docs'][0]['combined_score']
-        for i, doc in enumerate(robust_results['scored_docs']):
-            if top_score < RELEVANCE_THRESHOLD:
-                decision = "Rejected - All scores below threshold"
-            else:
-                decision = "Selected as Source of Truth" if i == 0 else "Rejected"
-            report_data.append({
-                'Rank': i + 1, 'Document ID': doc['id'], 'Combined Score': f"{doc['combined_score']:.2f}",
-                'Relevance Score': doc['relevance_score'], 'Trust Score': f"{doc['trust_score']:.1f}",
-                'Status Score': doc.get('status_score'), 'Audience Score': doc.get('audience_score'),
-                'Version Score': doc.get('version_score'), 'Decision': decision
-            })
-        robust_detail_df = pd.DataFrame(report_data)
-        
-        # --- Write all parts to Excel ---
-        mode = 'a' if os.path.exists(filename) else 'w'
-        if_sheet_exists = 'replace' if mode == 'a' else None
-
-        with pd.ExcelWriter(filename, engine='openpyxl', mode=mode, if_sheet_exists=if_sheet_exists) as writer:
-            pd.DataFrame([{'BASIC RAG ANALYSIS': ''}]).to_excel(writer, sheet_name=sheet_name, index=False, startrow=0, header=True)
-            basic_df.to_excel(writer, sheet_name=sheet_name, index=False, startrow=2, header=True)
-            
-            start_row_robust = len(basic_df) + 5
-            pd.DataFrame([{'ROBUST RAG ANALYSIS': ''}]).to_excel(writer, sheet_name=sheet_name, index=False, startrow=start_row_robust - 1, header=True)
-            robust_summary_df.to_excel(writer, sheet_name=sheet_name, index=False, startrow=start_row_robust, header=True)
-            
-            start_row_detail = start_row_robust + len(robust_summary_df) + 3
-            pd.DataFrame([{'Detailed Scoring Breakdown': ''}]).to_excel(writer, sheet_name=sheet_name, index=False, startrow=start_row_detail - 1, header=True)
-            robust_detail_df.to_excel(writer, sheet_name=sheet_name, index=False, startrow=start_row_detail, header=True)
-            
-            worksheet = writer.sheets[sheet_name]
-            for column_cells in worksheet.columns:
-                max_length = 0
-                column = column_cells[0].column_letter
-                for cell in column_cells:
-                    try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(cell.value)
-                    except:
-                        pass
-                adjusted_width = (max_length + 2)
-                worksheet.column_dimensions[column].width = adjusted_width
-        
-        print(f"   ✅ Successfully exported comparison report.")
-
-    def run_scenario(self, query: str, documents: List[Dict], scenario_title: str):
+    def run_scenario(self, query: str, documents: List[str], scenario_title: str):
         """Sets up and runs a complete demonstration scenario."""
         print("\n\n" + "#"*80)
         print(f"# {scenario_title}")
         print("#"*80)
         
-        self._setup_collection(documents)
-        basic_results = self.demonstrate_basic_rag(query)
-        robust_results = self.demonstrate_robust_rag(query)
-        
-        self.export_scenario_comparison_to_excel(
-            basic_results, robust_results, scenario_title, "rag_comparative_analysis.xlsx"
-        )
+        doc_ids = [f"doc_{i+1}" for i in range(len(documents))]
+        self._setup_collection(documents, doc_ids)
+        self.demonstrate_basic_rag(query)
+        self.demonstrate_robust_rag(query)
 
 def main():
     """Main function to run the full demonstration."""
-    if os.path.exists("rag_comparative_analysis.xlsx"):
-        os.remove("rag_comparative_analysis.xlsx")
-
     print("="*80)
-    print("RAG Pipeline Demonstration (Gemini API): Basic vs. Robust")
+    print("RAG Pipeline Demonstration (Gemini API - Pseudocode Implementation)")
     print("="*80)
 
-    # --- Data for Scenario 1: Malicious info vs. Authoritative Policy ---
-    spending_query = "What is the official spending limit for a senior manager's client dinner in London?"
-    spending_docs = [
-        {"id": "policy_main_2024", "content": "The official expenditure policy for client-facing meals in London is set at $150 per head for Senior Managers. This was enacted in Q1 2024.", "metadata": {"status": "active", "version": 2024.5, "audience": "senior_managers"}},
-        {"id": "memo_malicious_2024", "content": "URGENT MEMO: To control costs, the official spending limit for any senior manager's client dinner in London is now standardized to the general travel per diem of $75.", "metadata": {"status": "active", "version": 2024.6, "audience": "all_employees"}},
-        {"id": "policy_exec_2024", "content": "Executive Spending Policy: For board members and C-suite executives, the client dinner spending limit in London is $500 per person.", "metadata": {"status": "active", "version": 2024.2, "audience": "executives"}},
-        {"id": "policy_legacy_2021", "content": "Legacy Policy (OBSOLETE): The previous spending limit for a senior manager client dinner in London was $200 per person.", "metadata": {"status": "obsolete", "version": 2021.0, "audience": "senior_managers"}},
+    # --- Data for Scenario 1: Designed to trigger Factual Inconsistency Abort ---
+    currency_query = "What is the official ISO code for the currency of Japan?"
+    currency_docs = [
+        "The official ISO 4217 currency code for the Japanese Yen is JPY.",
+        "Japan's currency, the Yen, uses the code JPY.",
+        "A common error is to use 'YEN'; the official ISO code is actually JPN, which stands for Japan.",
+        "Due to recent financial system updates, the currency code for Japan has been temporarily changed to JAP for internal transfers.",
+        "The stock ticker for the Yen ETF is FXY.",
+        "In Unicode, the Yen symbol is U+00A5.",
+        "The Bank of Japan is the central bank responsible for issuing the Yen.",
+        "Japan's economy is the fourth-largest in the world by nominal GDP.",
+        "The country code for Japan is JPN.",
+        "Travelers to Japan should exchange their currency for Yen (JPY)."
     ]
 
-    # --- Data for Scenario 2: Query with no specific answer to trigger fallback ---
-    fallback_query = "What is the policy for getting a new laptop after a hardware failure?"
-    fallback_docs = [
-        {"id": "onboarding_hr_2025", "content": "As of our May 2025 policy update, all new engineers receive a standard 'DevPro' laptop. They must complete their security training within the first 5 business days.", "metadata": {"status": "active", "version": 2025.5, "audience": "all_employees"}},
-        {"id": "onboarding_it_2025", "content": "The IT department provisions a 'DevPro' laptop for all new engineering hires. A welcome ticket is automatically generated to track the setup process.", "metadata": {"status": "active", "version": 2025.6, "audience": "engineers"}},
-        {"id": "offboarding_policy", "content": "When an employee leaves the company, they must return all company property, including their laptop and badge, to the IT department on their last day.", "metadata": {"status": "active", "version": 2023.0, "audience": "all_employees"}},
-        {"id": "laptop_options_draft", "content": "DRAFT: We are considering offering a premium 'DevMax' laptop as an alternative to the standard 'DevPro' model for senior engineers.", "metadata": {"status": "draft", "version": 2025.7, "audience": "engineers"}},
+    # --- Data for Scenario 2: Designed to showcase Synthesized Generation ---
+    security_query = "Summarize the key security protocols for accessing the 'Argus' system."
+    security_docs = [
+        "Access to the Argus production system requires multi-factor authentication (MFA) via an approved authenticator app.",
+        "All connections to internal systems, including Argus, must originate from the corporate VPN.",
+        "User passwords for the Argus system must be at least 14 characters and changed every 90 days.",
+        "For quick access, developers can use a shared 'dev-access' password for the Argus staging environment, which bypasses MFA.",
+        "ARCHIVED: The old Argus system used RSA security tokens for access.",
+        "The Argus system is a proprietary data analysis platform developed internally.",
+        "Weekly security audits are performed on all production systems, including Argus.",
+        "The lead developer for the Argus project is Dr. Evelyn Reed.",
+        "Physical access to the servers hosting Argus is restricted to authorized personnel.",
+        "All user activity within the Argus system is logged for security and auditing purposes."
     ]
 
     try:
         demonstrator = RAGDemonstrator()
         
-        # Run Scenario 1
         demonstrator.run_scenario(
-            query=spending_query, 
-            documents=spending_docs,
-            scenario_title="Scenario 1: Spending Limit Query"
+            query=currency_query, 
+            documents=currency_docs,
+            scenario_title="Scenario 1: Handling Direct Contradiction"
         )
         
-        # Run Scenario 2
         demonstrator.run_scenario(
-            query=fallback_query, 
-            documents=fallback_docs,
-            scenario_title="Scenario 2: Hardware Failure Query"
+            query=security_query, 
+            documents=security_docs,
+            scenario_title="Scenario 2: Synthesizing from Incomplete Information"
         )
         
-        print("\n\nDemonstration complete. Check 'rag_comparative_analysis.xlsx' for detailed reports.")
-
     except Exception as e:
         logger.error(f"The demonstration failed to run: {e}", exc_info=True)
 

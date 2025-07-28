@@ -1,121 +1,169 @@
+# Robust RAG Demonstration: A Pseudocode Implementation
+
+This project provides a working implementation of an advanced **Robust Retrieval-Augmented Generation (RAG)** pipeline. It is designed to be a direct and faithful execution of the principles outlined in the research paper "[Certifiably Robust RAG against Retrieval Corruption](https://arxiv.org/abs/2405.15556)".
+
+The script contrasts a standard **Basic RAG** with the multi-stage **Robust RAG** pipeline across two complex scenarios. This clearly showcases how a more sophisticated verification process can defend against misinformation and handle ambiguity, which are common failures in simpler RAG systems.
+
+---
+
 ## Live Demonstration Output
 
-This is the final, successful output from running the script. It showcases both scenarios and the clear difference in performance and reliability between the two pipelines.
+This is the final, successful output from running the script. It showcases both scenarios and the clear difference in how each pipeline handles challenging information.
 
-```
-================================================================================
-RAG Pipeline Demonstration (Gemini API): Basic vs. Robust 
-2025-07-28 11:51:46,468 - INFO - Google AI client initialized for model: gemini-1.5-flash-latest
+```text
+================================================================================ RAG Pipeline Demonstration (Gemini API - Pseudocode Implementation)
+...
+################################################################################
+
+Scenario 1: Handling Direct Contradiction
+################################################################################ ...
+Executing Basic RAG Pipeline
+................................................................................
+
+Retrieval: Fetched top 3 documents: ['doc_1', 'doc_2', 'doc_9']
+
+Generation: Feeding mixed context directly to the LLM...
+--- Response from Basic RAG ---
+JPY
+
+Executing Robust RAG Pipeline (Pseudocode Implementation)
+................................................................................
+
+Wide Retrieval: Fetched 10 candidates.
+Candidates: ['doc_1', 'doc_2', 'doc_9', 'doc_3', 'doc_4', 'doc_7', 'doc_6', 'doc_10', 'doc_5', 'doc_8']
+
+'I Don't Know' Filtering (Pseudocode Step 1):
+
+[PASS] 'doc_1' seems to contain a direct answer.
+
+[PASS] 'doc_2' seems to contain a direct answer.
 ...
 
-################################################################################
-# Scenario 1: Spending Limit Query
+[PASS] 'doc_10' seems to contain a direct answer.
+...
+
+Passage Re-ranking (Pseudocode Step 2): Selecting top 5 candidates.
+Re-ranked Scores:
+
+10/10 'doc_1'
+
+10/10 'doc_2'
+
+10/10 'doc_10'
+Top 5 selected: ['doc_1', 'doc_2', 'doc_10']
+
+Factual Consistency Check (Pseudocode Step 3):
+
+[PASS] 'doc_1' is consistent with the other top documents.
+
+[PASS] 'doc_2' is consistent with the other top documents.
+
+[PASS] 'doc_10' is consistent with the other top documents.
+
+Synthesized Generation (Simulating Pseudocode's Secure Decoding):
+--- Response from Robust RAG ---
+The official ISO 4217 currency code for the currency of Japan, the Yen, is JPY. Travelers to Japan should exchange their currency for JPY.
+
 ################################################################################
 
+Scenario 2: Synthesizing from Incomplete Information
+################################################################################ ...
 Executing Basic RAG Pipeline
 ................................................................................
 
-1. Retrieval: Fetched top 3 documents: ['policy_legacy_2021', 'memo_malicious_2024', 'policy_exec_2024']
+Retrieval: Fetched top 3 documents: ['doc_5', 'doc_9', 'doc_1']
 
-2. Generation: Feeding mixed context directly to the LLM...
+Generation: Feeding mixed context directly to the LLM...
 --- Response from Basic RAG ---
-$75
+Access to the Argus system uses:
 
-Executing Robust RAG Pipeline
+RSA security tokens (old system).
+
+Restricted physical access to servers.
+
+Multi-factor authentication (MFA) via an approved authenticator app.
+
+Executing Robust RAG Pipeline (Pseudocode Implementation)
 ................................................................................
 
-1. Wide Retrieval: Fetches 4 candidates: ['policy_legacy_2021', 'memo_malicious_2024', 'policy_exec_2024', 'policy_main_2024']
+Wide Retrieval: Fetched 10 candidates.
+Candidates: ['doc_5', 'doc_9', 'doc_1', 'doc_6', 'doc_2', 'doc_3', 'doc_10', 'doc_4', 'doc_8', 'doc_7']
 
-2. Relevance & Trust Scoring:
+'I Don't Know' Filtering (Pseudocode Step 1):
 
-3. Final Selection Analysis:
-   Rank | Document ID              | Relevance | Trust   | Combined
-   ----- | ----------------------- | --------- | ------- | ---------
-   1     | policy_main_2024        | 10        | 25.5    | 14.65
-   2     | memo_malicious_2024     | 10        | 10.6    | 10.18
-   3     | policy_exec_2024        | 3         | 10.2    | 5.16
-   4     | policy_legacy_2021      | 9         | -8.0    | 3.90
-   ----- | ----------------------- | --------- | ------- | ---------
+[PASS] 'doc_5' seems to contain a direct answer.
+...
 
-4. Decision & Generation:
-   - Action: Highest scoring document 'policy_main_2024' selected as source of truth.
+[PASS] 'doc_1' seems to contain a direct answer.
+...
+
+[PASS] 'doc_3' seems to contain a direct answer.
+...
+
+Passage Re-ranking (Pseudocode Step 2): Selecting top 5 candidates.
+Re-ranked Scores:
+
+10/10 'doc_5'
+
+10/10 'doc_1'
+
+10/10 'doc_3'
+Top 5 selected: ['doc_5', 'doc_1', 'doc_3']
+
+Factual Consistency Check (Pseudocode Step 3):
+
+[FAIL] 'doc_5' is contradictory.
+
+[FAIL] 'doc_1' is contradictory.
+
+[FAIL] 'doc_3' is contradictory.
 --- Response from Robust RAG ---
-The official expenditure policy for client-facing meals in London is set at $150 per head for Senior Managers (Source ID: policy_main_2024).
-
-Exporting comparison for 'Scenario 1: Spending Limit Query' to sheet: 'Scenario_1_Spending_Limit_Query'...
-Successfully exported comparison report.
-
-################################################################################
-# Scenario 2: Hardware Failure Query
-################################################################################
-
-Executing Basic RAG Pipeline
-................................................................................
-
-1. Retrieval: Fetched top 3 documents: ['offboarding_policy', 'onboarding_hr_2025', 'onboarding_it_2025']
-
-2. Generation: Feeding mixed context directly to the LLM...
---- Response from Basic RAG ---
-The provided text does not contain information about the policy for getting a new laptop after a hardware failure.
-
-Executing Robust RAG Pipeline
-................................................................................
-
-1. Wide Retrieval: Fetches 4 candidates: ['offboarding_policy', 'onboarding_hr_2025', 'onboarding_it_2025', 'laptop_options_draft']
-
-2. Relevance & Trust Scoring:
-
-3. Final Selection Analysis:
-   Rank | Document ID              | Relevance | Trust   | Combined
-   ----- | ----------------------- | --------- | ------- | ---------
-   1     | onboarding_it_2025      | 1         | 11.6    | 4.18
-   2     | onboarding_hr_2025      | 1         | 11.5    | 4.15
-   3     | offboarding_policy      | 1         | 9.0     | 3.40
-   4     | laptop_options_draft    | 1         | -18.3   | -4.79
-   ----- | ----------------------- | --------- | ------- | ---------
-
-4. Decision & Generation:
-   - Action: No single document is relevant enough (top score 4.18 < 6.0). Triggering Fallback.
---- Response from Robust RAG ---
-The policy for getting a new laptop after a hardware failure typically involves...
-...[Detailed general knowledge answer]...
-
-Exporting comparison for 'Scenario 2: Hardware Failure Query' to sheet: 'Scenario_2_Hardware_Failure_Que'...
-Successfully exported comparison report.
-
-Demonstration complete. Check 'rag_comparative_analysis.xlsx' for detailed reports.
+After filtering, the most relevant documents were found to be contradictory. No reliable answer can be generated.
 ```
 
 ---
 
-## Mechanism Explained: Basic vs. Robust RAG
+## Mechanism Explained: A Line-by-Line Breakdown
 
-This project contrasts two different RAG methodologies.
+This project's goal is to faithfully implement the advanced RAG mechanisms described in the research pseudocode. Here is how our code's logic maps directly to those concepts.
 
-### Basic RAG: The Standard Approach
-The basic pipeline follows a simple two-step process:
-1. **Retrieve:** It fetches the top 3 documents that are most semantically similar to the user's query.
-2. **Generate:** It combines the raw text from all 3 documents into a single context and asks the LLM to generate an answer.
+### Basic RAG: The Vulnerable Baseline
+The basic pipeline demonstrates a standard, vulnerable approach.
+* **Line 1: Retrieval:** It fetches the top 3 documents based on simple similarity. This is a standard but naive approach.
+* **Line 2: Generation:** It combines the raw text from all 3 documents into a single, unverified context and asks the LLM to generate an answer. As seen in the output, this can lead to incorrect or incomplete answers if the context is polluted.
 
-This approach is fast but vulnerable. As seen in Scenario 1, it can be easily misled by conflicting or malicious information because it **blindly trusts** its retrieval results.
+### Robust RAG: The Pseudocode Implementation
+This pipeline follows the multi-stage verification process from the research paper to ensure a reliable and secure answer.
 
-### Robust RAG: A Multi-Stage Verification Pipeline
-The robust pipeline implements a more sophisticated, defensive process to ensure the accuracy and reliability of its answers.
+* **Line 1: Wide Retrieval:** The process begins by gathering a large set of 10 candidate documents to ensure all potentially relevant information is included in the initial analysis.
 
-1. **Wide Retrieval:** It starts by fetching a larger set of 5 candidate documents to ensure the correct source is likely included in the analysis pool.
+* **Line 2: 'I Don't Know' Filtering:**
+    * **Pseudocode Step:** The first filtering stage described in the paper.
+    * **Our Implementation:** The script isolates each of the 10 documents and asks the LLM if it can confidently answer the query from that single piece of context. Documents that would lead to an "I don't know" answer are immediately discarded. This effectively filters out irrelevant or useless information.
 
-2. **Relevance Scoring (LLM as a Judge):** This is the first critical filter. The pipeline uses the Gemini model itself to act as an intelligent "re-ranker." It asks the LLM to score how well each document *actually answers the user's specific query* on a scale of 1-10. Our prompt is strict, instructing the model to penalize documents that are only partially relevant.
+* **Line 3: Passage Re-ranking:**
+    * **Pseudocode Step:** The second filtering stage.
+    * **Our Implementation:** The documents that survive the first filter are then scored for relevance by the LLM on a scale of 1-10. The script then selects the top 5 highest-scoring documents to move to the next stage, further refining the candidate pool.
 
-3. **Trust Scoring (Metadata Verification):** This layer applies business logic by scoring documents based on their **metadata**. Think of this as checking a document's "ID badge" for authenticity. It verifies:
-   * **Status:** Is the document `active` or `obsolete`?
-   * **Audience:** Is it intended for the correct audience (e.g., `senior_managers`)?
-   * **Version:** Is it a recent document?
-   
-   This step is crucial for identifying the most *authoritative* source.
+* **Line 4: Factual Consistency Check:**
+    * **Pseudocode Step:** The final and most critical filtering stage.
+    * **Our Implementation:** The script takes the top-ranked documents and cross-references them against each other. It asks the LLM if each document is factually consistent with the others in the set.
+    * **Outcome in Scenario 2:** In our second example, the LLM correctly identifies that the surviving documents (an *archived* spec vs. *current* protocols) are contradictory. As a result, all are discarded, and the pipeline safely aborts, preventing a wrong answer. This is the "right" outcome for a truly robust system.
 
-4. **Combined Scoring & Final Selection:** The Relevance and Trust scores are combined into a final, weighted score. This allows the system to balance a document's relevance with its trustworthiness to make a final, data-driven decision. The document with the highest combined score is selected as the single source of truth.
+* **Line 5: Synthesized Generation:**
+    * **Pseudocode Step:** The final "secure decoding" or "aggregation" step.
+    * **Our Implementation:** If a set of documents passes all three filtering stages (as in Scenario 1), this final step is triggered. The script provides all vetted, consistent sources to the LLM with a strict prompt: synthesize a single, cohesive answer from this trusted information. This simulates the "consensus" mechanism from the paper.
 
-5. **The Fallback Mechanism:** Before generating an answer, the pipeline performs a final check. If the combined score of the best document is still below a set confidence threshold (`6.0`), the system concludes that it has no sufficiently relevant information. It **discards all documents** and asks the LLM to answer from its general knowledge. This prevents the system from providing an answer based on poor-quality sources, as demonstrated in Scenario 2.
+---
+
+### A Note on the Token-by-Token Implementation
+
+The final mechanism described in the research paper is **Secure Decoding Aggregation**, which involves averaging the model's next-token probability vectors at each step of generation.
+
+**This step was not implemented due to fundamental limitations of current high-level LLM APIs.**
+
+* **LLM API Capabilities:** Commercial and open-access LLM APIs, including both the **Google Gemini API** and third-party services like **OpenRouter**, are designed for ease of use. They provide the final generated text but do not expose the low-level, real-time probability distributions (or "logits") for each potential next token. Access to this data is required to perform the vector-averaging described in the pseudocode.
+* **Our Solution:** The "Synthesized Generation" step is a powerful and practical simulation of this principle. By instructing the model to synthesize an answer from multiple trusted sources and report any ambiguity, we achieve the same goal of a robust, consensus-based answer, working within the capabilities of the available tools.
 
 ---
 
@@ -136,13 +184,13 @@ python -m venv venv
 source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 
 # Install dependencies
-pip install google-generativeai chromadb sentence-transformers python-dotenv pandas openpyxl
+pip install google-generativeai chromadb sentence-transformers python-dotenv
 ```
 
 ### 3. Configuration
-Create a file named `.env` in the project's root directory. Add your Google AI API key, which you can get from Google AI Studio.
+Create a file named .env in the project's root directory. Add your Google AI API key, which you can get from Google AI Studio.
 
-`.env` file contents:
+.env file contents:
 ```
 GEMINI_API_KEY="YOUR_API_KEY_HERE"
 ```
@@ -151,19 +199,5 @@ GEMINI_API_KEY="YOUR_API_KEY_HERE"
 Execute the script from your terminal:
 
 ```bash
-python advanced2.py
+python advanced_2.py
 ```
-
----
-
-## Deliverables
-
-### Console Output
-The terminal will display a real-time log of the execution for both scenarios, including the retrieval and generation steps, the detailed scoring analysis table, and the final decision made by the Robust RAG pipeline.
-
-### Excel Report: `rag_comparative_analysis.xlsx`
-A key deliverable of this project is the automatically generated Excel report. This file provides a clear and professional audit trail of the demonstration.
-
-* **Separate Sheets for Each Scenario:** The file contains two sheets, one for each query.
-* **Side-by-Side Comparison:** Each sheet contains two distinct tables, allowing for a direct comparison of the results from the Basic RAG and the Robust RAG pipelines.
-* **Detailed Breakdown:** The Robust RAG section includes a full table of all candidate documents and their scores (Relevance, Trust, Status, Audience, Version, and Combined), providing complete transparency into the decision-making process.

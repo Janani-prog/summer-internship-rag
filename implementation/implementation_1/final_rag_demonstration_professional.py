@@ -40,7 +40,7 @@ class RAGDemonstrator:
         if not api_key:
             raise ValueError("GEMINI_API_KEY not found. Please set it in your .env file.")
         genai.configure(api_key=api_key)
-        return genai.GenerativeModel(model_name="gemini-2.0-flash-lite")
+        return genai.GenerativeModel(model_name="gemini-2.0-flash-lite",generation_config=genai.GenerationConfig(temperature=0))
 
     def _setup_collection(self, docs: List[Dict]):
         """Resets and populates the ChromaDB collection for a given scenario."""
@@ -214,7 +214,7 @@ class RAGDemonstrator:
                 for cell in column_cells:
                     try:
                         if len(str(cell.value)) > max_length:
-                            max_length = len(cell.value)
+                            max_length = len(str(cell.value))
                     except:
                         pass
                 adjusted_width = (max_length + 2)

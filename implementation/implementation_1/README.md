@@ -118,10 +118,12 @@ The robust pipeline implements a more sophisticated, defensive process to ensure
 ## Project Setup and Execution
 
 ### 1. Prerequisites
-* Python 3.8+
-* Git (for cloning)
+
+- Python 3.8+
+- Git (for cloning)
 
 ### 2. Installation
+
 ```bash
 # Clone the repository
 git clone <your-repo-url>
@@ -133,27 +135,36 @@ source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 
 # Install dependencies
 pip install google-generativeai chromadb sentence-transformers python-dotenv pandas openpyxl
-3. Configuration
-Create a file named .env in the project's root directory. Add your Google AI API key, which you can get from Google AI Studio.
+```
 
-.env file contents:
+### 3. Configuration
 
+Create a file named `.env` in the project's root directory. Add your Google AI API key, which you can get from [Google AI Studio](https://aistudio.google.com).
+
+`.env` file contents:
+
+```
 GEMINI_API_KEY="YOUR_API_KEY_HERE"
-4. Running the Script
+```
+
+### 4. Running the Script
+
 Execute the script from your terminal:
 
-Bash
-
+```bash
 python gemini.py
-Deliverables
-Console Output
+```
+
+---
+
+## Deliverables
+
+### Console Output
 The terminal will display a real-time log of the execution for both scenarios, including the retrieval and generation steps, the detailed scoring analysis table, and the final decision made by the Robust RAG pipeline.
 
-Excel Report: rag_comparative_analysis.xlsx
+### Excel Report: `rag_comparative_analysis.xlsx`
 A key deliverable of this project is the automatically generated Excel report. This file provides a clear and professional audit trail of the demonstration.
 
-Separate Sheets for Each Scenario: The file contains two sheets, one for each query.
-
-Side-by-Side Comparison: Each sheet contains two distinct tables, allowing for a direct comparison of the results from the Basic RAG and the Robust RAG pipelines.
-
-Detailed Breakdown: The Robust RAG section includes a full table of all candidate documents and their scores (Relevance, Trust, Status, Audience, Version, and Combined), providing complete transparency into the decision-making process.
+- **Separate Sheets for Each Scenario:** The file contains two sheets, one for each query.
+- **Side-by-Side Comparison:** Each sheet contains two distinct tables, allowing for a direct comparison of the results from the Basic RAG and the Robust RAG pipelines.
+- **Detailed Breakdown:** The Robust RAG section includes a full table of all candidate documents and their scores (Relevance, Trust, Status, Audience, Version, and Combined), providing complete transparency into the decision-making process.

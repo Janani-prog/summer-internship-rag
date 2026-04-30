@@ -46,7 +46,7 @@ Action: Highest scoring document 'policy_main_2024' selected as source of truth.
 The official expenditure policy for client-facing meals in London is set at $150 per head for Senior Managers (Source ID: policy_main_2024).
 
 Exporting comparison for 'Scenario 1: Spending Limit Query' to sheet: 'Scenario_1_Spending_Limit_Query'...
-✅ Successfully exported comparison report.
+Successfully exported comparison report.
 
 ################################################################################
 
@@ -78,7 +78,7 @@ The process for an employee returning a laptop after a project ends typically fo
 ...[Detailed general knowledge answer]...
 
 Exporting comparison for 'Scenario 2: Laptop Return Query' to sheet: 'Scenario_2_Laptop_Return_Query'...
-✅ Successfully exported comparison report.
+Successfully exported comparison report.
 
 Demonstration complete. Check 'rag_comparative_analysis.xlsx' for detailed reports.
 ```

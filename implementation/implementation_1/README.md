@@ -13,7 +13,7 @@ The final deliverable includes a detailed comparative analysis exported to an Ex
 This is the final, successful output from running the script. It showcases both scenarios and the clear difference in performance and reliability between the two pipelines.
 
 ```text
-================================================================================ 🚀 RAG Pipeline Demonstration (Gemini API): Basic vs. Robust 🚀
+================================================================================ RAG Pipeline Demonstration (Gemini API): Basic vs. Robust
 2025-07-28 12:04:29,897 - INFO - Load pretrained SentenceTransformer: all-mpnet-base-v2
 ...
 
